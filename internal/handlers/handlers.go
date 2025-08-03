@@ -19,18 +19,18 @@ type Handler struct {
 // @Produce json
 // @Param input body models.Subscription true "Subscription data"
 // @Success 200 {object} models.Subscription
-// @Failure 400 {object} map[string]string "Invalid input"
-// @Failure 500 {object} map[string]string "Could not create subscription"
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
 // @Router /subscriptions [post]
 func (h *Handler) CreateSubscription(c *gin.Context) {
 	var s models.Subscription
 	if err := c.ShouldBindJSON(&s); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
 		return
 	}
 	sub, err := h.Repo.CreateSubscription(s)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create subscription"})
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Could not create subscription"})
 		return
 	}
 	c.JSON(http.StatusOK, sub)
@@ -42,18 +42,18 @@ func (h *Handler) CreateSubscription(c *gin.Context) {
 // @Produce json
 // @Param user_id query string true "User UUID"
 // @Success 200 {array} models.Subscription
-// @Failure 400 {object} map[string]string "user_id required"
-// @Failure 500 {object} map[string]string "Could not fetch subscriptions"
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
 // @Router /subscriptions [get]
 func (h *Handler) ListSubscriptions(c *gin.Context) {
 	userID := c.Query("user_id")
 	if userID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "user_id required"})
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "user_id required"})
 		return
 	}
 	subs, err := h.Repo.ListSubscriptions(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch subscriptions"})
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Could not fetch subscriptions"})
 		return
 	}
 	c.JSON(http.StatusOK, subs)
@@ -65,13 +65,13 @@ func (h *Handler) ListSubscriptions(c *gin.Context) {
 // @Produce json
 // @Param id path string true "Subscription ID"
 // @Success 200 {object} models.Subscription
-// @Failure 404 {object} map[string]string "Not found"
+// @Failure 404 {object} models.ErrorResponse
 // @Router /subscriptions/{id} [get]
 func (h *Handler) GetSubscription(c *gin.Context) {
 	id := c.Param("id")
 	sub, err := h.Repo.GetSubscriptionByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+		c.JSON(http.StatusNotFound, models.ErrorResponse{Error: "Not found"})
 		return
 	}
 	c.JSON(http.StatusOK, sub)
@@ -85,20 +85,20 @@ func (h *Handler) GetSubscription(c *gin.Context) {
 // @Param id path string true "Subscription ID"
 // @Param input body models.Subscription true "Updated subscription data"
 // @Success 200 {object} models.Subscription
-// @Failure 400 {object} map[string]string "Invalid input"
-// @Failure 500 {object} map[string]string "Update failed"
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
 // @Router /subscriptions/{id} [put]
 func (h *Handler) UpdateSubscription(c *gin.Context) {
 	id := c.Param("id")
 	var s models.Subscription
 	if err := c.ShouldBindJSON(&s); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
 		return
 	}
 	s.ID = id
 	sub, err := h.Repo.UpdateSubscription(s)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Update failed"})
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Update failed"})
 		return
 	}
 	c.JSON(http.StatusOK, sub)
@@ -110,12 +110,12 @@ func (h *Handler) UpdateSubscription(c *gin.Context) {
 // @Produce json
 // @Param id path string true "Subscription ID"
 // @Success 204 "No Content"
-// @Failure 500 {object} map[string]string "Delete failed"
+// @Failure 500 {object} models.ErrorResponse
 // @Router /subscriptions/{id} [delete]
 func (h *Handler) DeleteSubscription(c *gin.Context) {
 	id := c.Param("id")
 	if err := h.Repo.DeleteSubscription(id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Delete failed"})
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Delete failed"})
 		return
 	}
 	c.Status(http.StatusNoContent)
@@ -130,18 +130,18 @@ func (h *Handler) DeleteSubscription(c *gin.Context) {
 // @Param user_id query string false "Filter by user ID"
 // @Param service_name query string false "Filter by service name"
 // @Success 200 {object} map[string]int "Total cost"
-// @Failure 400 {object} map[string]string "Invalid query"
-// @Failure 500 {object} map[string]string "Could not calculate total"
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
 // @Router /subscriptions/summary [get]
 func (h *Handler) SumSubscriptions(c *gin.Context) {
 	var f models.SubscriptionSumRequest
 	if err := c.ShouldBindQuery(&f); err != nil || f.From == "" || f.To == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid query"})
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid query"})
 		return
 	}
 	sum, err := h.Repo.SumSubscriptions(f)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not calculate total"})
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Could not calculate total"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"total": sum})

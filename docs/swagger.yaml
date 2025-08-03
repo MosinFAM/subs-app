@@ -1,5 +1,11 @@
 basePath: /
 definitions:
+  models.ErrorResponse:
+    properties:
+      error:
+        example: Invalid input
+        type: string
+    type: object
   models.Subscription:
     properties:
       end_date:
@@ -50,17 +56,13 @@ paths:
               $ref: '#/definitions/models.Subscription'
             type: array
         "400":
-          description: user_id required
+          description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.ErrorResponse'
         "500":
-          description: Could not fetch subscriptions
+          description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.ErrorResponse'
       summary: List all subscriptions for a user
       tags:
       - subscriptions
@@ -83,17 +85,13 @@ paths:
           schema:
             $ref: '#/definitions/models.Subscription'
         "400":
-          description: Invalid input
+          description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.ErrorResponse'
         "500":
-          description: Could not create subscription
+          description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.ErrorResponse'
       summary: Create a new subscription
       tags:
       - subscriptions
@@ -112,11 +110,9 @@ paths:
         "204":
           description: No Content
         "500":
-          description: Delete failed
+          description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.ErrorResponse'
       summary: Delete a subscription
       tags:
       - subscriptions
@@ -136,11 +132,9 @@ paths:
           schema:
             $ref: '#/definitions/models.Subscription'
         "404":
-          description: Not found
+          description: Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.ErrorResponse'
       summary: Get subscription by ID
       tags:
       - subscriptions
@@ -168,17 +162,13 @@ paths:
           schema:
             $ref: '#/definitions/models.Subscription'
         "400":
-          description: Invalid input
+          description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.ErrorResponse'
         "500":
-          description: Update failed
+          description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.ErrorResponse'
       summary: Update a subscription
       tags:
       - subscriptions
@@ -215,17 +205,13 @@ paths:
               type: integer
             type: object
         "400":
-          description: Invalid query
+          description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.ErrorResponse'
         "500":
-          description: Could not calculate total
+          description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.ErrorResponse'
       summary: Calculate total cost of subscriptions
       tags:
       - subscriptions
