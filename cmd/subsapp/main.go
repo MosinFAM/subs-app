@@ -6,6 +6,7 @@ import (
 
 	"github.com/MosinFAM/subs-app/internal/db"
 	"github.com/MosinFAM/subs-app/internal/handlers"
+	"github.com/MosinFAM/subs-app/internal/logger"
 	"github.com/MosinFAM/subs-app/internal/middleware"
 	"github.com/MosinFAM/subs-app/internal/repo"
 	"github.com/gin-gonic/gin"
@@ -27,10 +28,14 @@ import (
 // @in header
 // @name Authorization
 func main() {
+	logger.Init()
+
 	conn, err := db.Connect()
 	if err != nil {
+		logger.LogError("Failed to connect to DB", err, nil)
 		log.Fatal(err)
 	}
+
 	repo := repo.NewPostgresRepo(conn)
 	h := &handlers.Handler{Repo: repo}
 
@@ -44,16 +49,15 @@ func main() {
 		subscriptions.GET(":id", h.GetSubscription)
 		subscriptions.PUT(":id", h.UpdateSubscription)
 		subscriptions.DELETE(":id", h.DeleteSubscription)
+		subscriptions.GET("/summary", h.SumSubscriptions)
 	}
-
-	r.GET("/summary", h.GetSubscriptionSummary)
 
 	// Swagger docs only in non-prod
 	if os.Getenv("ENV") != "production" {
 		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 
-	log.Println("Listening on :8080")
+	logger.LogInfo("Server running on :8080", nil)
 	if err := r.Run(":8080"); err != nil {
 		os.Exit(1)
 	}

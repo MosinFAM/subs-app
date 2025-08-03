@@ -7,6 +7,6 @@ RUN go mod tidy
 
 COPY . .
 
-RUN go build -o main ./cmd/marketplace
+RUN go build -o main ./cmd/subsapp
 
 CMD ["/app/main"]

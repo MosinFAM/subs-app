@@ -24,6 +24,7 @@ func (r *PostgresRepo) CreateSubscription(s models.Subscription) (models.Subscri
 	if err != nil {
 		return s, err
 	}
+
 	var end *time.Time
 	if s.EndDate != nil {
 		e, err := time.Parse("01-2006", *s.EndDate)
@@ -57,6 +58,7 @@ func (r *PostgresRepo) ListSubscriptions(userID string) ([]models.Subscription, 
 		var s models.Subscription
 		var start time.Time
 		var end *time.Time
+
 		err := rows.Scan(&s.ID, &s.ServiceName, &s.Price, &s.UserID, &start, &end)
 		if err != nil {
 			return nil, err
@@ -68,6 +70,7 @@ func (r *PostgresRepo) ListSubscriptions(userID string) ([]models.Subscription, 
 		}
 		subs = append(subs, s)
 	}
+
 	return subs, nil
 }
 
@@ -104,8 +107,60 @@ func (r *PostgresRepo) SumSubscriptions(filter models.SubscriptionSumRequest) (i
 	if err != nil {
 		return 0, err
 	}
+
 	if !sum.Valid {
 		return 0, nil
 	}
 	return int(sum.Int64), nil
+}
+
+func (r *PostgresRepo) GetSubscriptionByID(id string) (models.Subscription, error) {
+	var s models.Subscription
+	var start time.Time
+	var end *time.Time
+
+	err := r.db.QueryRow(`
+		SELECT id, service_name, price, user_id, start_date, end_date
+		FROM subscriptions
+		WHERE id = $1
+	`, id).Scan(&s.ID, &s.ServiceName, &s.Price, &s.UserID, &start, &end)
+	if err != nil {
+		return s, err
+	}
+
+	s.StartDate = start.Format("01-2006")
+	if end != nil {
+		str := end.Format("01-2006")
+		s.EndDate = &str
+	}
+	return s, nil
+}
+
+func (r *PostgresRepo) UpdateSubscription(s models.Subscription) (models.Subscription, error) {
+	start, err := time.Parse("01-2006", s.StartDate)
+	if err != nil {
+		return s, err
+	}
+
+	var end *time.Time
+	if s.EndDate != nil {
+		e, err := time.Parse("01-2006", *s.EndDate)
+		if err != nil {
+			return s, err
+		}
+		end = &e
+	}
+
+	_, err = r.db.Exec(`
+		UPDATE subscriptions
+		SET service_name=$1, price=$2, user_id=$3, start_date=$4, end_date=$5
+		WHERE id=$6
+	`, s.ServiceName, s.Price, s.UserID, start, end, s.ID)
+
+	return s, err
+}
+
+func (r *PostgresRepo) DeleteSubscription(id string) error {
+	_, err := r.db.Exec(`DELETE FROM subscriptions WHERE id = $1`, id)
+	return err
 }
