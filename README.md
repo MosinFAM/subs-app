@@ -24,9 +24,21 @@ REST API для управления онлайн-подписками поль�
 
 ```bash
 docker compose -f build/docker-compose.yml up -d --build
+```
 
 
 Swagger-документация доступна по адресу
 
 [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
 
+<!-- #### `make build`
+
+Собирает приложение в bin/marketplace.
+
+#### `make test`
+
+Запускает тесты.
+
+#### `make lint`
+
+Запускает линтер. -->
