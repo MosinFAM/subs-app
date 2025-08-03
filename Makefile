@@ -1,7 +1,7 @@
 .PHONY: build
 build:
 	go mod vendor
-	go build -mod=vendor -o bin/marketplace ./cmd/marketplace
+	go build -mod=vendor -o bin/subsapp ./cmd/subsapp
 
 .PHONY: test
 test:

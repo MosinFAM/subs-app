@@ -119,6 +119,7 @@ func (h *Handler) DeleteSubscription(c *gin.Context) {
 		return
 	}
 	c.Status(http.StatusNoContent)
+	c.Writer.WriteHeaderNow()
 }
 
 // @Summary Calculate total cost of subscriptions

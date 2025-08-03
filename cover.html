@@ -1,0 +1,556 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>handlers: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/MosinFAM/subs-app/internal/handlers/handlers.go (100.0%)</option>
+				
+				<option value="file1">github.com/MosinFAM/subs-app/internal/repo/postgres.go (0.0%)</option>
+				
+				<option value="file2">github.com/MosinFAM/subs-app/internal/repo/repo_mock.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package handlers
+
+import (
+        "net/http"
+
+        "github.com/MosinFAM/subs-app/internal/models"
+        "github.com/MosinFAM/subs-app/internal/repo"
+        "github.com/gin-gonic/gin"
+)
+
+type Handler struct {
+        Repo repo.Repository
+}
+
+// @Summary Create a new subscription
+// @Description Create a new subscription for a user
+// @Tags subscriptions
+// @Accept json
+// @Produce json
+// @Param input body models.Subscription true "Subscription data"
+// @Success 200 {object} models.Subscription
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /subscriptions [post]
+func (h *Handler) CreateSubscription(c *gin.Context) <span class="cov8" title="1">{
+        var s models.Subscription
+        if err := c.ShouldBindJSON(&amp;s); err != nil </span><span class="cov8" title="1">{
+                c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
+                return
+        }</span>
+        <span class="cov8" title="1">sub, err := h.Repo.CreateSubscription(s)
+        if err != nil </span><span class="cov8" title="1">{
+                c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Could not create subscription"})
+                return
+        }</span>
+        <span class="cov8" title="1">c.JSON(http.StatusOK, sub)</span>
+}
+
+// @Summary List all subscriptions for a user
+// @Description Returns all subscriptions for the specified user
+// @Tags subscriptions
+// @Produce json
+// @Param user_id query string true "User UUID"
+// @Success 200 {array} models.Subscription
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /subscriptions [get]
+func (h *Handler) ListSubscriptions(c *gin.Context) <span class="cov8" title="1">{
+        userID := c.Query("user_id")
+        if userID == "" </span><span class="cov8" title="1">{
+                c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "user_id required"})
+                return
+        }</span>
+        <span class="cov8" title="1">subs, err := h.Repo.ListSubscriptions(userID)
+        if err != nil </span><span class="cov8" title="1">{
+                c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Could not fetch subscriptions"})
+                return
+        }</span>
+        <span class="cov8" title="1">c.JSON(http.StatusOK, subs)</span>
+}
+
+// @Summary Get subscription by ID
+// @Description Returns the subscription with the specified ID
+// @Tags subscriptions
+// @Produce json
+// @Param id path string true "Subscription ID"
+// @Success 200 {object} models.Subscription
+// @Failure 404 {object} models.ErrorResponse
+// @Router /subscriptions/{id} [get]
+func (h *Handler) GetSubscription(c *gin.Context) <span class="cov8" title="1">{
+        id := c.Param("id")
+        sub, err := h.Repo.GetSubscriptionByID(id)
+        if err != nil </span><span class="cov8" title="1">{
+                c.JSON(http.StatusNotFound, models.ErrorResponse{Error: "Not found"})
+                return
+        }</span>
+        <span class="cov8" title="1">c.JSON(http.StatusOK, sub)</span>
+}
+
+// @Summary Update a subscription
+// @Description Updates an existing subscription by ID
+// @Tags subscriptions
+// @Accept json
+// @Produce json
+// @Param id path string true "Subscription ID"
+// @Param input body models.Subscription true "Updated subscription data"
+// @Success 200 {object} models.Subscription
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /subscriptions/{id} [put]
+func (h *Handler) UpdateSubscription(c *gin.Context) <span class="cov8" title="1">{
+        id := c.Param("id")
+        var s models.Subscription
+        if err := c.ShouldBindJSON(&amp;s); err != nil </span><span class="cov8" title="1">{
+                c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
+                return
+        }</span>
+        <span class="cov8" title="1">s.ID = id
+        sub, err := h.Repo.UpdateSubscription(s)
+        if err != nil </span><span class="cov8" title="1">{
+                c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Update failed"})
+                return
+        }</span>
+        <span class="cov8" title="1">c.JSON(http.StatusOK, sub)</span>
+}
+
+// @Summary Delete a subscription
+// @Description Deletes the subscription with the specified ID
+// @Tags subscriptions
+// @Produce json
+// @Param id path string true "Subscription ID"
+// @Success 204 "No Content"
+// @Failure 500 {object} models.ErrorResponse
+// @Router /subscriptions/{id} [delete]
+func (h *Handler) DeleteSubscription(c *gin.Context) <span class="cov8" title="1">{
+        id := c.Param("id")
+        if err := h.Repo.DeleteSubscription(id); err != nil </span><span class="cov8" title="1">{
+                c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Delete failed"})
+                return
+        }</span>
+        <span class="cov8" title="1">c.Status(http.StatusNoContent)
+        c.Writer.WriteHeaderNow()</span>
+}
+
+// @Summary Calculate total cost of subscriptions
+// @Description Calculates the total subscription cost over a given period, optionally filtered by user ID and service name
+// @Tags subscriptions
+// @Produce json
+// @Param from query string true "Start date in MM-YYYY format"
+// @Param to query string true "End date in MM-YYYY format"
+// @Param user_id query string false "Filter by user ID"
+// @Param service_name query string false "Filter by service name"
+// @Success 200 {object} map[string]int "Total cost"
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /subscriptions/summary [get]
+func (h *Handler) SumSubscriptions(c *gin.Context) <span class="cov8" title="1">{
+        var f models.SubscriptionSumRequest
+        if err := c.ShouldBindQuery(&amp;f); err != nil || f.From == "" || f.To == "" </span><span class="cov8" title="1">{
+                c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid query"})
+                return
+        }</span>
+        <span class="cov8" title="1">sum, err := h.Repo.SumSubscriptions(f)
+        if err != nil </span><span class="cov8" title="1">{
+                c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Could not calculate total"})
+                return
+        }</span>
+        <span class="cov8" title="1">c.JSON(http.StatusOK, gin.H{"total": sum})</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package repo
+
+import (
+        "database/sql"
+        "fmt"
+        "time"
+
+        "github.com/MosinFAM/subs-app/internal/models"
+        "github.com/google/uuid"
+)
+
+type PostgresRepo struct {
+        db *sql.DB
+}
+
+func NewPostgresRepo(db *sql.DB) *PostgresRepo <span class="cov0" title="0">{
+        return &amp;PostgresRepo{db: db}
+}</span>
+
+func (r *PostgresRepo) CreateSubscription(s models.Subscription) (models.Subscription, error) <span class="cov0" title="0">{
+        s.ID = uuid.New().String()
+
+        start, err := time.Parse("01-2006", s.StartDate)
+        if err != nil </span><span class="cov0" title="0">{
+                return s, err
+        }</span>
+
+        <span class="cov0" title="0">var end *time.Time
+        if s.EndDate != nil </span><span class="cov0" title="0">{
+                e, err := time.Parse("01-2006", *s.EndDate)
+                if err != nil </span><span class="cov0" title="0">{
+                        return s, err
+                }</span>
+                <span class="cov0" title="0">end = &amp;e</span>
+        }
+
+        <span class="cov0" title="0">_, err = r.db.Exec(`
+                INSERT INTO subscriptions (id, service_name, price, user_id, start_date, end_date)
+                VALUES ($1, $2, $3, $4, $5, $6)
+        `, s.ID, s.ServiceName, s.Price, s.UserID, start, end)
+
+        return s, err</span>
+}
+
+func (r *PostgresRepo) ListSubscriptions(userID string) ([]models.Subscription, error) <span class="cov0" title="0">{
+        rows, err := r.db.Query(`
+                SELECT id, service_name, price, user_id, start_date, end_date
+                FROM subscriptions
+                WHERE user_id = $1
+        `, userID)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">defer rows.Close()
+
+        var subs []models.Subscription
+        for rows.Next() </span><span class="cov0" title="0">{
+                var s models.Subscription
+                var start time.Time
+                var end *time.Time
+
+                err := rows.Scan(&amp;s.ID, &amp;s.ServiceName, &amp;s.Price, &amp;s.UserID, &amp;start, &amp;end)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+                <span class="cov0" title="0">s.StartDate = start.Format("01-2006")
+                if end != nil </span><span class="cov0" title="0">{
+                        str := end.Format("01-2006")
+                        s.EndDate = &amp;str
+                }</span>
+                <span class="cov0" title="0">subs = append(subs, s)</span>
+        }
+
+        <span class="cov0" title="0">return subs, nil</span>
+}
+
+func (r *PostgresRepo) SumSubscriptions(filter models.SubscriptionSumRequest) (int, error) <span class="cov0" title="0">{
+        from, err := time.Parse("01-2006", filter.From)
+        if err != nil </span><span class="cov0" title="0">{
+                return 0, err
+        }</span>
+        <span class="cov0" title="0">to, err := time.Parse("01-2006", filter.To)
+        if err != nil </span><span class="cov0" title="0">{
+                return 0, err
+        }</span>
+
+        <span class="cov0" title="0">query := `
+                SELECT SUM(price)
+                FROM subscriptions
+                WHERE start_date &lt;= $1 AND (end_date IS NULL OR end_date &gt;= $2)
+        `
+        args := []interface{}{to, from}
+        idx := 3
+
+        if filter.UserID != nil </span><span class="cov0" title="0">{
+                query += fmt.Sprintf(" AND user_id = $%d", idx)
+                args = append(args, *filter.UserID)
+                idx++
+        }</span>
+        <span class="cov0" title="0">if filter.ServiceName != nil </span><span class="cov0" title="0">{
+                query += fmt.Sprintf(" AND service_name ILIKE $%d", idx)
+                args = append(args, "%"+*filter.ServiceName+"%")
+        }</span>
+
+        <span class="cov0" title="0">var sum sql.NullInt64
+        err = r.db.QueryRow(query, args...).Scan(&amp;sum)
+        if err != nil </span><span class="cov0" title="0">{
+                return 0, err
+        }</span>
+
+        <span class="cov0" title="0">if !sum.Valid </span><span class="cov0" title="0">{
+                return 0, nil
+        }</span>
+        <span class="cov0" title="0">return int(sum.Int64), nil</span>
+}
+
+func (r *PostgresRepo) GetSubscriptionByID(id string) (models.Subscription, error) <span class="cov0" title="0">{
+        var s models.Subscription
+        var start time.Time
+        var end *time.Time
+
+        err := r.db.QueryRow(`
+                SELECT id, service_name, price, user_id, start_date, end_date
+                FROM subscriptions
+                WHERE id = $1
+        `, id).Scan(&amp;s.ID, &amp;s.ServiceName, &amp;s.Price, &amp;s.UserID, &amp;start, &amp;end)
+        if err != nil </span><span class="cov0" title="0">{
+                return s, err
+        }</span>
+
+        <span class="cov0" title="0">s.StartDate = start.Format("01-2006")
+        if end != nil </span><span class="cov0" title="0">{
+                str := end.Format("01-2006")
+                s.EndDate = &amp;str
+        }</span>
+        <span class="cov0" title="0">return s, nil</span>
+}
+
+func (r *PostgresRepo) UpdateSubscription(s models.Subscription) (models.Subscription, error) <span class="cov0" title="0">{
+        start, err := time.Parse("01-2006", s.StartDate)
+        if err != nil </span><span class="cov0" title="0">{
+                return s, err
+        }</span>
+
+        <span class="cov0" title="0">var end *time.Time
+        if s.EndDate != nil </span><span class="cov0" title="0">{
+                e, err := time.Parse("01-2006", *s.EndDate)
+                if err != nil </span><span class="cov0" title="0">{
+                        return s, err
+                }</span>
+                <span class="cov0" title="0">end = &amp;e</span>
+        }
+
+        <span class="cov0" title="0">_, err = r.db.Exec(`
+                UPDATE subscriptions
+                SET service_name=$1, price=$2, user_id=$3, start_date=$4, end_date=$5
+                WHERE id=$6
+        `, s.ServiceName, s.Price, s.UserID, start, end, s.ID)
+
+        return s, err</span>
+}
+
+func (r *PostgresRepo) DeleteSubscription(id string) error <span class="cov0" title="0">{
+        _, err := r.db.Exec(`DELETE FROM subscriptions WHERE id = $1`, id)
+        return err
+}</span>
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">// Code generated by MockGen. DO NOT EDIT.
+// Source: repo.go
+//
+// Generated by this command:
+//
+//        mockgen -source=repo.go -destination=repo_mock.go -package=repo Repository
+//
+
+// Package repo is a generated GoMock package.
+package repo
+
+import (
+        reflect "reflect"
+
+        models "github.com/MosinFAM/subs-app/internal/models"
+        gomock "go.uber.org/mock/gomock"
+)
+
+// MockRepository is a mock of Repository interface.
+type MockRepository struct {
+        ctrl     *gomock.Controller
+        recorder *MockRepositoryMockRecorder
+        isgomock struct{}
+}
+
+// MockRepositoryMockRecorder is the mock recorder for MockRepository.
+type MockRepositoryMockRecorder struct {
+        mock *MockRepository
+}
+
+// NewMockRepository creates a new mock instance.
+func NewMockRepository(ctrl *gomock.Controller) *MockRepository <span class="cov8" title="1">{
+        mock := &amp;MockRepository{ctrl: ctrl}
+        mock.recorder = &amp;MockRepositoryMockRecorder{mock}
+        return mock
+}</span>
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder <span class="cov8" title="1">{
+        return m.recorder
+}</span>
+
+// CreateSubscription mocks base method.
+func (m *MockRepository) CreateSubscription(s models.Subscription) (models.Subscription, error) <span class="cov8" title="1">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "CreateSubscription", s)
+        ret0, _ := ret[0].(models.Subscription)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}</span>
+
+// CreateSubscription indicates an expected call of CreateSubscription.
+func (mr *MockRepositoryMockRecorder) CreateSubscription(s any) *gomock.Call <span class="cov8" title="1">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSubscription", reflect.TypeOf((*MockRepository)(nil).CreateSubscription), s)
+}</span>
+
+// DeleteSubscription mocks base method.
+func (m *MockRepository) DeleteSubscription(id string) error <span class="cov8" title="1">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "DeleteSubscription", id)
+        ret0, _ := ret[0].(error)
+        return ret0
+}</span>
+
+// DeleteSubscription indicates an expected call of DeleteSubscription.
+func (mr *MockRepositoryMockRecorder) DeleteSubscription(id any) *gomock.Call <span class="cov8" title="1">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSubscription", reflect.TypeOf((*MockRepository)(nil).DeleteSubscription), id)
+}</span>
+
+// GetSubscriptionByID mocks base method.
+func (m *MockRepository) GetSubscriptionByID(id string) (models.Subscription, error) <span class="cov8" title="1">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "GetSubscriptionByID", id)
+        ret0, _ := ret[0].(models.Subscription)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}</span>
+
+// GetSubscriptionByID indicates an expected call of GetSubscriptionByID.
+func (mr *MockRepositoryMockRecorder) GetSubscriptionByID(id any) *gomock.Call <span class="cov8" title="1">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionByID", reflect.TypeOf((*MockRepository)(nil).GetSubscriptionByID), id)
+}</span>
+
+// ListSubscriptions mocks base method.
+func (m *MockRepository) ListSubscriptions(userID string) ([]models.Subscription, error) <span class="cov8" title="1">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "ListSubscriptions", userID)
+        ret0, _ := ret[0].([]models.Subscription)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}</span>
+
+// ListSubscriptions indicates an expected call of ListSubscriptions.
+func (mr *MockRepositoryMockRecorder) ListSubscriptions(userID any) *gomock.Call <span class="cov8" title="1">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSubscriptions", reflect.TypeOf((*MockRepository)(nil).ListSubscriptions), userID)
+}</span>
+
+// SumSubscriptions mocks base method.
+func (m *MockRepository) SumSubscriptions(filter models.SubscriptionSumRequest) (int, error) <span class="cov8" title="1">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "SumSubscriptions", filter)
+        ret0, _ := ret[0].(int)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}</span>
+
+// SumSubscriptions indicates an expected call of SumSubscriptions.
+func (mr *MockRepositoryMockRecorder) SumSubscriptions(filter any) *gomock.Call <span class="cov8" title="1">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SumSubscriptions", reflect.TypeOf((*MockRepository)(nil).SumSubscriptions), filter)
+}</span>
+
+// UpdateSubscription mocks base method.
+func (m *MockRepository) UpdateSubscription(s models.Subscription) (models.Subscription, error) <span class="cov8" title="1">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "UpdateSubscription", s)
+        ret0, _ := ret[0].(models.Subscription)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}</span>
+
+// UpdateSubscription indicates an expected call of UpdateSubscription.
+func (mr *MockRepositoryMockRecorder) UpdateSubscription(s any) *gomock.Call <span class="cov8" title="1">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSubscription", reflect.TypeOf((*MockRepository)(nil).UpdateSubscription), s)
+}</span>
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
